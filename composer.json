@@ -1,0 +1,19 @@
+{
+    "name": "stijn-flipper/phile-paginator",
+    "type": "phile-plugin",
+    "license": "MIT",
+    "description": "Twig pagination for Phile CMS",
+    "homepage": "https://github.com/Stijn-Flipper/phileMathjax",
+    "keywords": ["cms", "phile", "plugin", "pagination", "twig"],
+    "authors": [
+        {
+            "name": "Stijn Wouters",
+            "email": "w.stijn@gmail.com",
+            "homepage": "http://hacketyflippy.be/"
+        }
+    ],
+    "require": {
+        "phile-cms/phile": ">=1.0",
+        "phile-cms/plugin-installer-plugin": ">=1.0"
+    }
+}
