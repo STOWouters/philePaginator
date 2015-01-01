@@ -65,7 +65,13 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
 
         // set page offset
         $key = $this->settings['url_parameter'];
-        $this->offset = (array_key_exists($key, $_GET)) ? intval($_GET[$key]) : 0;
+        $match = array();
+        preg_match('/\?'.$key.'=-?[0-9]+/', $_SERVER['REQUEST_URI'], $match);
+        $this->offset = (empty($match)) ? 0 : intval(substr($match[0], strlen('?'.$key.'=')));
+
+        // note that we're using $_SERVER['REQUEST_URI'] instead the usually
+        // $_GET, this is because both seems to work in nginx as for Apache
+        // ($_GET fails on some nginx servers with improper rewrite rules)
     }
 
     /**
