@@ -206,3 +206,14 @@ paginate based upon the url the visitor is visiting.
 
 Otherwise, a trivial paginator is used: this will always return true for each
 page.
+
+
+## Demo
+How about visiting my website? Yes, I'm using the awesome plugin!
+
+(notice me senpai and the url!)
+
+- <http://hacketyflippy.be/blog>
+- <http://hacketyflippy.be/blog?page=0>
+- <http://hacketyflippy.be/blog?page=1>
+- <http://hacketyflippy.be/blog/project?page=1>
