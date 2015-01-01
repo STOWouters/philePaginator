@@ -3,6 +3,9 @@
 return array(
     /**
      * The maximal amount of posts to display in one page.
+     *
+     * Set to 0 or a negative value if you don't want to limit the posts per
+     * page.
      */
     'posts_per_page' => 10,
 
