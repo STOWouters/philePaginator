@@ -65,7 +65,7 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
 
         // set page offset
         $key = $this->settings['url_parameter'];
-        $this->offset = (array_key_exists($key, $_GET)) ? $_GET[$key] : 0;
+        $this->offset = (array_key_exists($key, $_GET)) ? intval($_GET[$key]) : 0;
     }
 
     /**
