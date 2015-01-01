@@ -216,4 +216,5 @@ How about visiting my website? Yes, I'm using the awesome plugin!
 - <http://hacketyflippy.be/blog>
 - <http://hacketyflippy.be/blog?page=0>
 - <http://hacketyflippy.be/blog?page=1>
-- <http://hacketyflippy.be/blog/project?page=1>
+- <http://hacketyflippy.be/blog/project?page=0>
+- <http://hacketyflippy.be/blog/post?page=0>
