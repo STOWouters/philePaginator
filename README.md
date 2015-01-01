@@ -24,8 +24,8 @@ With this plugin, you can set the pagination so that:
 - when visiting `/blog/project`, _only_ the pages under the `project` subfolder
   are listed
 
-And let's do it even more: we want to limit the pages to be listed to 5, but
-allow pagination for visitors that want to move back/forth.
+And let's do it even more: we want to limit the pages to be listed to 5 posts,
+but allow pagination for visitors that want to move back/forth.
 
 _Hell yeah!_ This plugin does that all for you.
 
@@ -140,21 +140,21 @@ below:
 This is useful if you want to disable the pagination button for example.
 
 I hope that everything is still clear to you, if not, then please post an issue
-so I can clarify the README more, or send a pull request if you think you could
-explain it better.
+so I can clarify the `README.md` more, or send a pull request if you think you
+could explain it better.
 
 
 ### Selecting the pages
 
 Now here comes the true power of the plugin: you can tell to the plugin which
-post should be paginated and which to discard as a post. That's where the
+post should be paginated and which to discard in pagination. That's where the
 `paginators` config key comes in for.
 
 A paginator is simply a function that takes a page as argument and returns a
 boolean denoting whether this page should be counted as a post or just discard
 it from the pagination.
 
-In the configuration file below, I've added a paginators:
+In the configuration file below, I've added a paginator:
 
 ```php
 <?php
@@ -203,3 +203,17 @@ When visiting `/blog`, the plugin will use the paginator as implemented in the
 
 Using the paginators in this way, you can customize what the plugin should
 paginate based upon the url the visitor is visiting.
+
+Otherwise, a trivial paginator is used: this will always return true for each
+page.
+
+
+## Demo
+How about visiting my website? Yes, I'm using the awesome plugin!
+
+(notice me senpai and the url!)
+
+- <http://hacketyflippy.be/blog>
+- <http://hacketyflippy.be/blog?page=0>
+- <http://hacketyflippy.be/blog?page=1>
+- <http://hacketyflippy.be/blog/post?page=1>
