@@ -55,7 +55,7 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
     public function request($uri)
     {
         // set uri
-        $this->uri = $uri;
+        $this->uri = urldecode($uri);
 
         // set paginator (set to NULL if there's no such paginator for the
         // requested uri)
