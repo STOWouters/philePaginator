@@ -82,6 +82,14 @@ return array(
     'url_parameter' => 'page',
 
     /**
+     * Which number to use as first page.
+     *
+     * Set this to 1 or any other integer if you wish to set the first page to
+     * be 1 instead of 0.
+     */
+    'first_page' => 0,
+
+    /**
      * How to sort the posts, this actually uses the same syntax as the one
      * from the Phile core.
      */
@@ -98,12 +106,13 @@ works before proceeding to using it.
 With the default settings, this will sort all the posts out and paginate it
 according to `posts_per_page`. Now you can use in your Twig HTML template:
 
-```html
+```twig
 <ul>
-    <li>You are on page {{ paginator.offset }} of {{ paginator.pages|length - 1}}</li>
     <li>There are {{ paginator.pages[paginator.offset]|length }} posts on this page</li>
-    <li>The url for the next page is {{ paginator.next }}</li>
+    <li>The url for the first page is {{ paginator.first }}</li>
     <li>The url for the previous page is {{ paginator.previous }}</li>
+    <li>The url for the next page is {{ paginator.next }}</li>
+    <li>The url for the last page is {{ paginator.last }}</li>
 </ul>
 
 <p>All the posts for this page are:</p>
@@ -123,10 +132,11 @@ An example output could be:
 
 ```html
 <ul>
-    <li>You are on page 0 of 2</li>
     <li>There are 10 posts on this page</li>
-    <li>The url for the next page is blog?page=1</li>
-    <li>The url for the previous page is</li>
+    <li>The url for the first page is blog?page=1</li>
+    <li>The url for the previous page is blog?page=1</li>
+    <li>The url for the next page is blog?page=3</li>
+    <li>The url for the last page is blog?page=5</li>
 </ul>
 
 ...
