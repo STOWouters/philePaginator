@@ -38,6 +38,13 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
     private $uri = '';
 
     /**
+     * The first page
+     *
+     * @var int first_page
+     */
+    private $first_page = 0;
+
+    /**
      * Constructor.
      *
      * Register plugin to Phile Core.
@@ -63,11 +70,14 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
         $uri = '/'.$uri;
         $this->paginator = (array_key_exists($uri, $paginators)) ? $paginators[$uri] : null;
 
+        // get first page
+        $this->first_page = $this->settings['first_page'];
+
         // set page offset
         $key = $this->settings['url_parameter'];
         $match = array();
         preg_match('/\?'.$key.'=-?[0-9]+/', $_SERVER['REQUEST_URI'], $match);
-        $this->offset = (empty($match)) ? 0 : intval(substr($match[0], strlen('?'.$key.'=')));
+        $this->offset = (empty($match)) ? 0 : intval(substr($match[0], strlen('?'.$key.'='))) - $this->first_page;
 
         // note that we're using $_SERVER['REQUEST_URI'] instead the usually
         // $_GET, this is because both seems to work in nginx as for Apache
@@ -129,16 +139,18 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
 
         // get pages
         $pages = $this->getPages();
-        $max_pages = count($pages) - 1;
 
         // get uri pattern for previous/next navigation
         $uri = $this->uri.'?'.$this->settings['url_parameter'].'=%s';
 
+        // get index to current page
+        $current = $this->offset + $this->first_page;
+
         // extend template variables
         $vars['paginator'] = array(
             'offset'   => $this->offset,
-            'previous' => ($this->offset > 0) ? sprintf($uri, $this->offset - 1) : '',
-            'next'     => ($this->offset < $max_pages) ? sprintf($uri, $this->offset + 1) : '',
+            'previous' => ($this->offset > 0) ? sprintf($uri, $current - 1) : '',
+            'next'     => ($this->offset < count($pages) - 1) ? sprintf($uri, $current + 1) : '',
             'pages'    => $this->getPages(),
         );
         \Phile\Registry::set($registry, $vars);
