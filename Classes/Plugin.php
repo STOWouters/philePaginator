@@ -139,6 +139,7 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
 
         // get pages
         $pages = $this->getPages();
+        $pages_count = count($pages) - 1;
 
         // get uri pattern for previous/next navigation
         $uri = $this->uri.'?'.$this->settings['url_parameter'].'=%s';
@@ -149,8 +150,10 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
         // extend template variables
         $vars['paginator'] = array(
             'offset'   => $this->offset,
+            'first'    => sprintf($uri, $this->first_page),
             'previous' => ($this->offset > 0) ? sprintf($uri, $current - 1) : '',
-            'next'     => ($this->offset < count($pages) - 1) ? sprintf($uri, $current + 1) : '',
+            'next'     => ($this->offset < $pages_count) ? sprintf($uri, $current + 1) : '',
+            'last'     => sprintf($uri, $this->first_page + $pages_count),
             'pages'    => $this->getPages(),
         );
         \Phile\Registry::set($registry, $vars);
