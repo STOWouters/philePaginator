@@ -36,13 +36,15 @@ return array(
      * For example:
      *
      *      '/blog' => function($page) {
-     *          return strpos($page->getUrl(), 'blog/');
+     *          return strpos($page->getUrl(), 'blog/') !== false;
      *      }
      *
      * When visiting the /blog page, all posts that contains a 'blog/' (with
      * trailing slashes) in its uri will be paginated.
      *
      * Regular expressions are allowed (note that the slashes will be escaped).
+     *
+     * Also note that '/' indicates the root page.
      *
      * Optionally, you can consult `lib/Phile/Model/Page.php` for a list of
      * member functions availble for the `$page` argument.
