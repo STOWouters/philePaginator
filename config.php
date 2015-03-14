@@ -21,6 +21,14 @@ return array(
     'url_parameter' => 'page',
 
     /**
+     * Which number to use as first page.
+     *
+     * Set this to 1 or any other integer if you wish to set the first page to
+     * be 1 instead of 0.
+     */
+    'first_page' => 0,
+
+    /**
      * How to sort the posts, this actually uses the same syntax as the one
      * from the Phile core.
      */
