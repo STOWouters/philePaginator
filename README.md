@@ -103,7 +103,7 @@ according to `posts_per_page`. Now you can use in your Twig HTML template:
     <li>You are on page {{ paginator.offset }} of {{ paginator.pages|length - 1}}</li>
     <li>There are {{ paginator.pages[paginator.offset]|length }} posts on this page</li>
     <li>The url for the next page is {{ paginator.next }}</li>
-    <li>The url for the previous page is {{ paginator.prev }}</li>
+    <li>The url for the previous page is {{ paginator.previous }}</li>
 </ul>
 
 <p>All the posts for this page are:</p>
