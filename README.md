@@ -59,8 +59,8 @@ $config['plugins']['stijnFlipper\\philePaginator'] = array('active' => true);
 
 1. Create a folder, for example `content/blog/`
 2. Put an empty `index.md` (extension depends on your settings, it might be
-   `index.textile as well)
-3. Put all your postings into it
+   `index.textile` as well) in that folder (so you can visit the `/blog/` page)
+3. Put all your postings into it (you can put it into a subfolder if you want)
 
 Now you can have in your Twig HTML template:
 
