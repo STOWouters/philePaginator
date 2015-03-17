@@ -32,7 +32,7 @@ _Hell yeah!_ This plugin does that all for you.
 ## Installation
 **Using composer**
 
-    $ composer require 'stijn-flipper/phile-paginator:dev-master' --prefer-dist
+    $ composer require 'stijn-flipper/phile-paginator:*' --prefer-dist
 
 **But I don't like composer**
 
