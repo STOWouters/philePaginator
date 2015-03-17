@@ -90,13 +90,13 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
 
         // get page offset
         //
-        // note that we're using $_SERVER['QUERY_STRING'] instead the usually
-        // $_GET, this is because both seems to work in nginx as for Apache
-        // ($_GET fails on some nginx servers with improper rewrite rules)
+        // note that we're using $_SERVER['REQUEST_URI'] instead the usually
+        // $_GET or $_SERVER['QUERY_STRING'], this is because both seems to work
+        // in nginx as for Apache ($_GET fails on some nginx servers with
+        // improper rewrite rules)
         $match = array();
-        $query_string = array_key_exists('QUERY_STRING', $_SERVER) ? $_SERVER['QUERY_STRING'] : '';
-        preg_match('/'.self::$query.'=-?[0-9]+/', $query_string, $match);
-        $requested_offset = empty($match) ? self::$begin : intval(substr($match[0], strlen(self::$query.'=')));
+        preg_match('/\?'.self::$query.'=-?[0-9]+/', $_SERVER['REQUEST_URI'], $match);
+        $requested_offset = empty($match) ? self::$begin : intval(substr($match[0], strlen('?'.self::$query.'=')));
 
         // calculate actual offset and update it
         $this->offset = $requested_offset - self::$begin;
