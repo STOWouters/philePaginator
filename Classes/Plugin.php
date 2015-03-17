@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Plugin class.
+ * Plugin namespace.
  */
 namespace Phile\Plugin\StijnFlipper\PhilePaginator;
 
 /**
- * Class Plugin
+ * Class Plugin.
  *
  * @author  Stijn Wouters
  * @link    https://github.com/Stijn-Flipper/philePaginator
@@ -17,32 +17,30 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
 {
 
     /**
-     * The paginator to be used
-     *
-     * @var function paginator
+     * The query key
      */
-    private $paginator = null;
+    private static $query = '';
 
     /**
-     * The current offset
-     *
-     * @var int offset
+     * Where to start the first page
      */
-    private $offset = 0;
+    private static $begin = 0;
+
+    /**
+     * All the (filtered) pages
+     */
+    private static $pages = array();
 
     /**
      * The requested uri
-     *
-     * @var string uri
      */
-    private $uri = '';
+    private static $uri = '';
+
 
     /**
-     * The first page
-     *
-     * @var int first_page
+     * The offset to the pages for this paginator
      */
-    private $first_page = 0;
+    private $offset = 0;
 
     /**
      * Constructor.
@@ -55,125 +53,124 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
     }
 
     /**
-     * Process request.
-     *
-     * @return void
-     */
-    public function request($uri)
-    {
-        // set uri
-        $this->uri = urldecode($uri);
-
-        // set paginator (set to NULL if there's no such paginator for the
-        // requested uri)
-        $paginators = $this->settings['paginators'];
-        $uri = '/'.$uri;
-        $this->paginator = (array_key_exists($uri, $paginators)) ? $paginators[$uri] : null;
-
-        // get first page
-        $this->first_page = $this->settings['first_page'];
-
-        // set page offset
-        $key = $this->settings['url_parameter'];
-        $match = array();
-        preg_match('/\?'.$key.'=-?[0-9]+/', $_SERVER['REQUEST_URI'], $match);
-        $this->offset = (empty($match)) ? 0 : intval(substr($match[0], strlen('?'.$key.'='))) - $this->first_page;
-
-        // note that we're using $_SERVER['REQUEST_URI'] instead the usually
-        // $_GET, this is because both seems to work in nginx as for Apache
-        // ($_GET fails on some nginx servers with improper rewrite rules)
-    }
-
-    /**
-     * Get all the posts to be paginated.
-     *
-     * @return array The set of posts to be paginated
-     */
-    public function getPosts()
-    {
-        // get all the posts
-		$repo = new \Phile\Repository\Page($this->settings);
-        $pages = $repo->findAll();
-
-        // if there's no paginator provided, then simply return all the pages
-        if (null === $this->paginator)
-            return $pages;
-
-        // otherwise, use the paginator to determine whether you should
-        // paginate the given post
-        return array_filter($pages, $this->paginator);
-    }
-
-    /**
-     * Get all the paginated pages
-     *
-     * @return array A two dimensional array of posts
-     */
-    public function getPages()
-    {
-        // get max posts per page
-        $posts_per_page = $this->settings['posts_per_page'];
-
-        // get all the paginated posts
-        $posts = $this->getPosts();
-
-        // if max posts per page is less than 1, then simply return all the
-        // posts
-        if ($posts_per_page < 1)
-            return array($posts);
-
-        // otherwise break'em up in chunks of arrays
-        return array_chunk($posts, $posts_per_page);
-    }
-
-    /**
-     * Export template variables variables
-     *
-     * @return void
-     */
-    public function export()
-    {
-        // get template variables
-        $registry = 'templateVars';
-        $vars = (\Phile\Registry::isRegistered($registry)) ? \Phile\Registry::get($registry) : array();
-
-        // get pages
-        $pages = $this->getPages();
-        $pages_count = count($pages) - 1;
-
-        // get uri pattern for previous/next navigation
-        $uri = $this->uri.'?'.$this->settings['url_parameter'].'=%s';
-
-        // get index to current page
-        $current = $this->offset + $this->first_page;
-
-        // extend template variables
-        $vars['paginator'] = array(
-            'offset'   => $this->offset,
-            'first'    => sprintf($uri, $this->first_page),
-            'previous' => ($this->offset > 0) ? sprintf($uri, $current - 1) : '',
-            'next'     => ($this->offset < $pages_count) ? sprintf($uri, $current + 1) : '',
-            'last'     => sprintf($uri, $this->first_page + $pages_count),
-            'pages'    => $this->getPages(),
-        );
-        \Phile\Registry::set($registry, $vars);
-    }
-
-    /**
      * Execute plugin.
-     *
-     * @param string $event
-     * @param null $data
-     *
-     * @return void
      */
     public function on($event, $data=null)
     {
+        // update the query to be used to request page
+        self::$query = $this->settings['url_parameter'];
+
+        // update the beginning of the page
+        self::$begin = $this->settings['first_page'];
+
+        // process requested uri (if triggered)
         if ('request_uri' === $event)
             $this->request($data['uri']);
 
-        // always export variables
-        $this->export();
+        // get template variable engine
+        $registry = 'templateVars';
+        $vars = (\Phile\Registry::isRegistered($registry)) ? \Phile\Registry::get($registry) : array();
+
+        // extend variables
+        $vars['paginator'] = $this;
+
+        // export variables
+        \Phile\Registry::set($registry, $vars);
+
+        return $this;
+    }
+
+    /**
+     * Process request.
+     */
+    public function request($uri)
+    {
+        // update uri
+        self::$uri = urldecode($uri);
+
+        // get page offset
+        //
+        // note that we're using $_SERVER['QUERY_STRING'] instead the usually
+        // $_GET, this is because both seems to work in nginx as for Apache
+        // ($_GET fails on some nginx servers with improper rewrite rules)
+        $match = array();
+        preg_match('/'.self::$query.'=-?[0-9]+/', $_SERVER['QUERY_STRING'], $match);
+        $requested_offset = empty($match) ? self::$begin : intval(substr($match[0], strlen(self::$query.'=')));
+
+        // calculate actual offset and update it
+        $this->offset = $requested_offset - self::$begin;
+
+        // filter the pages
+        $paginators = $this->settings['paginators'];
+        $filter = array_key_exists($uri, $filters) ? $paginators[$uri] : function($page) {
+            return strpos($page->getUrl(), self::$uri) !== false and strpos($page->getFilePath(), 'index') === false;
+        };
+		$repo = new \Phile\Repository\Page($this->settings);
+        $pages = array_filter($repo->findAll(), $filter);
+
+        // chunk'em up if neccessary
+        $posts_per_page = $this->settings['posts_per_page'];
+        self::$pages = ($posts_per_page <= 0) ? array($pages) : array_chunk($pages, $posts_per_page);
+
+        return $this;
+    }
+
+    /**
+     * Get complete uri (excluding base url and including query string).
+     */
+    public function getUri()
+    {
+        return self::$uri.'?'.self::$query.'='.strval(self::$begin + $this->offset);
+    }
+
+    /**
+     * Get all the posts on the current page.
+     */
+    public function getPages()
+    {
+        if (0 <= $this->offset and $this->offset < count(self::$pages))
+            return self::$pages[$this->offset];
+        return array();
+    }
+
+    /**
+     * Get previous paginator
+     */
+    public function getPrevious()
+    {
+        $paginator = new \Phile\Plugin\StijnFlipper\PhilePaginator\Plugin();
+        $paginator->offset = $this->offset - 1;
+        return $paginator;
+    }
+
+    /**
+     * Get next paginator
+     */
+    public function getNext()
+    {
+        $paginator = new \Phile\Plugin\StijnFlipper\PhilePaginator\Plugin();
+        $paginator->offset = $this->offset + 1;
+        return $paginator;
+    }
+
+    /**
+     * Get first paginator
+     */
+    public function getFirst()
+    {
+        $paginator = new \Phile\Plugin\StijnFlipper\PhilePaginator\Plugin();
+        $paginator->offset = self::$begin;
+        return $paginator;
+    }
+
+    /**
+     * Get last paginator
+     */
+    public function getLast()
+    {
+        $paginator = new \Phile\Plugin\StijnFlipper\PhilePaginator\Plugin();
+        $paginator->offset = count(self::$pages) + self::$begin - 1;
+        return $paginator;
     }
 
 } // end class
