@@ -17,8 +17,7 @@ Suppose your content directory looks like this:
 
 With this plugin, you can set the pagination so that:
 
-- when visiting `/blog`, _all_ pages under the `post` and `project` subfolder
-  are listed
+- when visiting `/blog`, _all_ pages under the `blog` folder are listed
 - when visiting `/blog/post`, _only_ the pages under the `post` subfolder
   are listed
 - when visiting `/blog/project`, _only_ the pages under the `project` subfolder
@@ -56,6 +55,62 @@ $config['plugins']['stijnFlipper\\philePaginator'] = array('active' => true);
 
 ## Usage
 
+### Basic usage
+
+1. Create a folder, for example `content/blog/`
+2. Put an empty `index.md` (extension depends on your settings, it might be
+   `index.textile as well)
+3. Put all your postings into it
+
+Now you can have in your Twig HTML template:
+
+```twig
+<p>You are on {{ paginator.uri }}, which contains {{ paginator.pages|length }} posts:</p>
+<ul>
+    {% for page in paginator.pages %}
+    <li>{{ page.title }}</li>
+    {% endfor %}
+</ul>
+
+<p>The first page is {{ paginator.first.uri }}, which contains {{ paginator.first.pages|length }} posts:</p>
+<p>The last page is {{ paginator.last.uri }}, which contains {{ paginator.last.pages|length }} posts:</p>
+<p>The previous page is {{ paginator.previous.uri }}, which contains {{ paginator.previous.pages|length }} posts:</p>
+<p>The next page is {{ paginator.next.uri }}, which contains {{ paginator.next.pages|length }} posts:</p>
+```
+
+Possible output:
+
+> You are on blog?page=1, which contains 8 posts:
+>
+> * Hello World!
+> * Hello World: The Sequel
+> * &hellip;
+>
+> The first page is blog?page=0, which contains 8 posts:
+>
+> The last page is blog?page=2, which contains 2 posts:
+>
+> The previous page is blog?page=0, which contains 8 posts:
+>
+> The next page is blog?page=2, which contains 2 posts:
+
+To check whether there's a next or previous page in twig, you can use the code
+below:
+
+```twig
+{{ paginator.previous.pages is empty ? "No previous page!" : "There's still a previous page!" }}
+{{ paginator.next.pages is empty ? "No next page!" : "There's still a next page!" }}
+```
+
+This is useful if you want to disable the pagination button for example.
+
+I hope that everything is still clear to you, if not, then please post an issue
+so I can clarify the `README.md` more, or send a pull request if you think you
+could explain it better.
+
+
+### Custom usage
+
 You can fine-tune the behavior by modifying the plugins `config.php`:
 
 ```php
@@ -68,7 +123,7 @@ return array(
      * Set to 0 or a negative value if you don't want to limit the posts per
      * page.
      */
-    'posts_per_page' => 10,
+    'posts_per_page' => 8,
 
     /**
      * URL parameter to determine the page offset.
@@ -95,85 +150,8 @@ return array(
      */
     'pages_order' => 'meta.date:desc meta.title:asc',
 
-    ...
-);
-```
-
-There's also one more configuration you can set: `paginators`, but that's
-explained further much below, it's important you understand how this plugin
-works before proceeding to using it.
-
-With the default settings, this will sort all the posts out and paginate it
-according to `posts_per_page`. Now you can use in your Twig HTML template:
-
-```twig
-<ul>
-    <li>There are {{ paginator.pages[paginator.offset]|length }} posts on this page</li>
-    <li>The url for the first page is {{ paginator.first }}</li>
-    <li>The url for the previous page is {{ paginator.previous }}</li>
-    <li>The url for the next page is {{ paginator.next }}</li>
-    <li>The url for the last page is {{ paginator.last }}</li>
-</ul>
-
-<p>All the posts for this page are:</p>
-
-<ul>
-    {% for post in paginator.pages[paginator.offset] %}
-    <li>{{ post.title }}</li>
-    {% endfor %}
-</ul>
-```
-
-Or do some other interesting stuffs with the `post` variable: you can display
-the content, title, meta,&hellip; just as if it came from the Phile original
-`pages` variable (the `pages` variable from Phile is left untouched).
-
-An example output could be:
-
-```html
-<ul>
-    <li>There are 10 posts on this page</li>
-    <li>The url for the first page is blog?page=1</li>
-    <li>The url for the previous page is blog?page=1</li>
-    <li>The url for the next page is blog?page=3</li>
-    <li>The url for the last page is blog?page=5</li>
-</ul>
-
-...
-```
-
-To check whether there's a next or previous page in twig, you can use the code
-below:
-
-    {{ paginator.next is empty ? "No next page!" : "There's still a next page!" }}
-
-This is useful if you want to disable the pagination button for example.
-
-I hope that everything is still clear to you, if not, then please post an issue
-so I can clarify the `README.md` more, or send a pull request if you think you
-could explain it better.
-
-
-### Selecting the pages
-
-Now here comes the true power of the plugin: you can tell to the plugin which
-post should be paginated and which to discard in pagination. That's where the
-`paginators` config key comes in for.
-
-A paginator is simply a function that takes a page as argument and returns a
-boolean denoting whether this page should be counted as a post or just discard
-it from the pagination.
-
-In the configuration file below, I've added a paginator:
-
-```php
-<?php
-
-return array(
-    ...
-
     /**
-     * All the paginators.
+     * Filter posts.
      *
      * This is an array where each uri is mapped to a function that will be
      * used for determining whether the page belongs to the same set of posts
@@ -181,50 +159,22 @@ return array(
      *
      * For example:
      *
-     *      '/blog' => function($page) {
-     *          return strpos($page->getUrl(), 'blog/');
+     *      'blog' => function($page) {
+     *          return strpos($page->getUrl(), 'blog/') !== false;
      *      }
      *
      * When visiting the /blog page, all posts that contains a 'blog/' (with
      * trailing slashes) in its uri will be paginated.
      *
-     * Regular expressions are allowed (note that the slashes will be escaped).
+     * Check out `lib/Phile/Model/Page.php` for a list of member functions
+     * availble for the `$page` argument.
      *
-     * Optionally, you can consult `lib/Phile/Model/Page.php` for a list of
-     * member functions availble for the `$page` argument.
+     * By default it paginates all the pages that's in the uri's folder (but
+     * the index file). For example the uri: `blog/project/` will paginate all
+     * the files under the `blog/project/` folder (recursively), with the
+     * exception of `index` files.
      */
     'paginators' => array(
-
-        '/blog' => function($page) {
-            $template = $page->getMeta()->get('template');
-            return (strpos($page->getUrl(), 'blog') !== false && (null === $template || 'post' === $template));
-        },
-
     ),
 );
 ```
-
-When visiting `/blog`, the plugin will use the paginator as implemented in the
-`config.php` file: this will paginate the pages that:
-
-- has `blog` in its url AND
-- doesn't have a `template` meta OR
-- the template meta is exactly `post`
-
-Using the paginators in this way, you can customize what the plugin should
-paginate based upon the url the visitor is visiting.
-
-Otherwise, a trivial paginator is used: this will always return true for each
-page.
-
-
-## Demo
-How about visiting my website? Yes, I'm using the awesome plugin!
-
-(notice me senpai and the url!)
-
-- <http://hacketyflippy.be/blog>
-- <http://hacketyflippy.be/blog?page=0>
-- <http://hacketyflippy.be/blog?page=1>
-- <http://hacketyflippy.be/blog/project?page=0>
-- <http://hacketyflippy.be/blog/post?page=0>
