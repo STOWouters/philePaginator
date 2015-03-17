@@ -102,7 +102,7 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
 
         // filter the pages
         $paginators = $this->settings['paginators'];
-        $filter = array_key_exists($uri, $filters) ? $paginators[$uri] : function($page) {
+        $filter = array_key_exists($uri, $paginators) ? $paginators[$uri] : function($page) {
             return strpos($page->getUrl(), self::$uri) !== false and strpos($page->getFilePath(), 'index') === false;
         };
 		$repo = new \Phile\Repository\Page($this->settings);
