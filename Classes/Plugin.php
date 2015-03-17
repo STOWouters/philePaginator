@@ -88,6 +88,10 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
         // update uri
         self::$uri = urldecode($uri);
 
+        // do nothing if the requested uri was empty
+        if (empty(self::$uri))
+            return $this;
+
         // get page offset
         //
         // note that we're using $_SERVER['REQUEST_URI'] instead the usually
