@@ -94,7 +94,8 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
         // $_GET, this is because both seems to work in nginx as for Apache
         // ($_GET fails on some nginx servers with improper rewrite rules)
         $match = array();
-        preg_match('/'.self::$query.'=-?[0-9]+/', $_SERVER['QUERY_STRING'], $match);
+        $query_string = array_key_exists('QUERY_STRING', $_SERVER) ? $_SERVER['QUERY_STRING'] : '';
+        preg_match('/'.self::$query.'=-?[0-9]+/', $query_string, $match);
         $requested_offset = empty($match) ? self::$begin : intval(substr($match[0], strlen(self::$query.'=')));
 
         // calculate actual offset and update it
