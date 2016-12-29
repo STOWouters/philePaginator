@@ -111,7 +111,7 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
             return strpos($page->getUrl(), self::$uri) !== false and strpos($page->getFilePath(), 'index') === false;
         };
 		$repo = new \Phile\Repository\Page($this->settings);
-        $pages = array_filter($repo->findAll(), $filter);
+        $pages = array_filter($repo->findAll()->toArray(), $filter);
 
         // chunk'em up if neccessary
         $posts_per_page = $this->settings['posts_per_page'];
