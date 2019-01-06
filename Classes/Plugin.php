@@ -110,7 +110,11 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
         $filter = array_key_exists($uri, $paginators) ? $paginators[$uri] : function($page) {
             return strpos($page->getUrl(), self::$uri) !== false and strpos($page->getFilePath(), 'index') === false;
         };
-		$repo = new \Phile\Repository\Page($this->settings);
+        //$repo = new \Phile\Repository\Page($this->settings);
+        //   $this->settings does not contain index 'content_dir',
+        //   causing an exception to be raised in findAll() below.
+        //   Omitting parameter $this->settings from the call fixes it.
+        $repo = new \Phile\Repository\Page();
         $pages = array_filter($repo->findAll()->toArray(), $filter);
 
         // chunk'em up if neccessary
